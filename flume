@@ -1,0 +1,80 @@
+******************************
+	Flume Tutorial
+******************************
+
+Start flume on x Master node
+* Install service flume on Cloudera and configure agent on CM host
+
+* In CM Goto -> Flume -> Configuration 
+  Set the Agent Name property to MyAgent
+  In 'Configuration File' Enter the following configuration
+
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+
+# The configuration file needs to define the sources, 
+# the channels and the sinks.
+# Sources, channels and sinks are defined per agent, 
+# in this case called 'MyAgent'
+
+MyAgent.sources = mysource
+MyAgent.channels = MemChannel
+MyAgent.sinks = HDFS
+
+MyAgent.sources.mysource.type = seq
+MyAgent.sources.mysource.channels = MemChannel
+
+MyAgent.sinks.HDFS.channel = MemChannel
+MyAgent.sinks.HDFS.type = hdfs
+MyAgent.sinks.HDFS.hdfs.path = hdfs://ip-172-31-35-245.ec2.internal:8020/user/flume/
+MyAgent.sinks.HDFS.hdfs.fileType = DataStream
+MyAgent.sinks.HDFS.hdfs.writeFormat = Text
+MyAgent.sinks.HDFS.hdfs.rollInterval = 0
+MyAgent.sinks.HDFS.hdfs.rollCount = 100
+MyAgent.sinks.HDFS.hdfs.useLocalTimeStamp = true
+MyAgent.sinks.hdfs.serializer = Text
+
+
+MyAgent.channels.MemChannel.type = memory
+MyAgent.channels.MemChannel.capacity = 10000
+MyAgent.channels.MemChannel.transactionCapacity = 100	 
+
+
+----**** Create HDFS directory for flume sink ****-----
+Conect to any worker node
+su hdfs
+hdfs dfs -mkdir /user/flume/
+hdfs dfs -chown -R flume:flume /user/flume
+hdfs dfs -chmod -R 770 /user/flume
+
+----**** Start the agent ****-----
+Connect to x Master node where flume is present
+cd /opt/cloudera/parcels : ls -- check the parcel name
+
+sudo /opt/cloudera/parcels/CDH-6.3.3-1.cdh6.3.3.p0.1796617/etc/init.d/flume-ng-agent status
+Flume NG agent is not running
+
+sudo /opt/cloudera/parcels/CDH-6.3.3-1.cdh6.3.3.p0.1796617/etc/init.d/flume-ng-agent start
+Starting Flume NG agent daemon
+
+sudo /opt/cloudera/parcels/CDH-6.3.3-1.cdh6.3.3.p0.1796617/etc/init.d/flume-ng-agent status
+Flume NG agent is running
+
+------***Check the Streaming data***-------
+Check on web UI -> Hdfs -> filebrowser -> /user/flume
+On worker node terminal cd /user/flume
