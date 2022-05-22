@@ -1,0 +1,29 @@
+*********************************************
+	HiveServer2 High Availability
+*********************************************
+
+
+
+### Go to Hive -> Instances -> Add role instances -> Hiveserver2
+Start the HS2 instance
+
+
+
+### Enable Dyanamic service discovery
+
+In Hive -> Configuration -> Category - Advanced 
+Search -> hiveserver2 Advanced Configuration snippet 
+
+Under "HiveServer2 Advanced Configuration Snippet (Safety Valve) for hive-site.xml"
+Name : hive.server2.support.dynamic.service.discovery
+Value : true
+(Leave final unchecked)
+
+
+### Connect through beeline
+
+beeline
+!connect jdbc:hive2://ip-172-31-18-254.ec2.internal:2181,ip-172-31-23-42.ec2.internal:2181,ip-172-31-17-83.ec2.internal:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2
+
+
+
