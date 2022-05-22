@@ -1,0 +1,88 @@
+############## Spark on Cloudera #############
+
+Add spark on cluster
+
+Download poem.text on linux system
+scp -i rashidlinuxkey.pem poem.txt ubuntu@ip_of_node:~/
+mv poem.txt poems
+sudo cp poems /var/lib/hadoop-hdfs
+
+sudo nano /etc/passwd
+sudo passwd hdfs
+sudo adduser hdfs sudo
+su hdfs
+hdfs dfs -mkdir /input
+
+--*** Testing Spark ***---
+
+hdfs dfs -put poems /input
+
+cd /opt/cloudera/parcels/CDH/lib/spark/bin/
+
+spark-shell
+
+val myfile = sc.textFile("hdfs://ip-10-0-1-112.ec2.internal:8020/input/")
+val counts = myfile.flatMap(line => line.split(" ")).map(word => (word, 1)).reduceByKey(_ + _)
+counts.saveAsTextFile("hdfs://ip-10-0-1-112.ec2.internal:8020/out1/")
+
+pyspark
+
+myfile = sc.textFile("hdfs://ip-10-0-1-112.ec2.internal:8020/input/")
+counts = myfile.flatMap(lambda line: line.split(" ")).map(lambda word: (word, 1)).reduceByKey(lambda v1,v2: v1 + v2)
+counts.saveAsTextFile("hdfs://ip-10-0-1-112.ec2.internal:8020/out2/")
+
+
+spark-submit --class org.apache.spark.examples.SparkPi --master yarn \
+--deploy-mode client /opt/cloudera/parcels/CDH/lib/spark/examples/jars/spark-examples_2.11-2.4.0-cdh6.3.3.jar 10
+
+
+spark-submit --class org.apache.spark.examples.SparkPi --master yarn \
+--deploy-mode cluster /opt/cloudera/parcels/CDH/lib/spark/examples/jars/spark-examples_2.11-2.4.0-cdh6.3.3.jar 10
+
+
+--*** Checking Configuration ***--
+
+In spark - search
+
+spark.dynamicAllocation.enabled	
+
+
+
+
+
+
+#############################
+---**** Hive on Spark ****---
+#############################
+
+
+
+## Check whether Hive on spark is enabled
+
+In Hive - search - Spark On YARN Service
+
+## Check the default execution engine
+
+In Hive - search - Default Execution Engine
+
+## Connect to Hue
+
+--> Determine the execution engine
+
+set hive.execution.engine;
+
+--> Set it to spark
+
+set hive.execution.engine=spark;
+
+set hive.execution.engine;
+
+
+## Fire some queries
+
+
+create table mytable (a int,b string);
+
+insert into table mytable (1,'abcd');
+
+(check the info logs for spark details )
